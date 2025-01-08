@@ -1,5 +1,6 @@
 package ie.atu;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -9,7 +10,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/membership")
 public class MembershipController {
-    private List<Membership> membershipList = new ArrayList<>();
+
+    private final List<Membership> membershipList = new ArrayList<>();
+    private final RabbitTemplate rabbitTemplate;
+
+    public MembershipController(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @PostMapping("/addMembership/{memberID}/{amount}")
     public Membership updateMembership(@PathVariable int memberID, @PathVariable double amount) {
@@ -26,6 +33,22 @@ public class MembershipController {
             membership.setEndDate(LocalDate.now().plusMonths(months).toString());
 
             membershipList.add(membership);
+
+            // Publish membership creation event to RabbitMQ
+            MembershipEvent event = new MembershipEvent(
+                    membership.getMemberID(),
+                    "NEW_MEMBERSHIP",
+                    membership.getMembershipDuration(),
+                    membership.getStartDate(),
+                    membership.getEndDate()
+            );
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE,
+                    RabbitMQConfig.ROUTING_KEY,
+                    event
+            );
+            System.out.println("Membership creation event sent to RabbitMQ: " + event);
+
             return membership;
         } else {
             throw new RuntimeException("Invalid payment amount: cannot create membership.");
