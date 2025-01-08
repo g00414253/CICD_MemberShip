@@ -1,12 +1,20 @@
 package ie.atu;
 
-public class MembershipEvent {
+import java.io.Serializable;
+
+public class MembershipEvent implements Serializable {
+    private static final long serialVersionUID = 1L; // Recommended for Serializable classes
+
     private int memberID;
     private String status;
     private int membershipDuration;
     private String startDate;
     private String endDate;
 
+    // Default constructor (required for JSON deserialization)
+    public MembershipEvent() {}
+
+    // Parameterized constructor
     public MembershipEvent(int memberID, String status, int membershipDuration, String startDate, String endDate) {
         this.memberID = memberID;
         this.status = status;

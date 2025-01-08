@@ -24,6 +24,7 @@ public class MembershipController {
         int months = mapAmountToMonths(amount);
 
         if (months > 0) {
+            // Create a new membership
             Membership membership = new Membership();
             membership.setMembershipID(membershipList.size() + 1);
             membership.setMemberID(memberID);
@@ -42,11 +43,14 @@ public class MembershipController {
                     membership.getStartDate(),
                     membership.getEndDate()
             );
+
+            // Send event to RabbitMQ
             rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.EXCHANGE,
-                    RabbitMQConfig.ROUTING_KEY,
-                    event
+                    RabbitMQConfig.EXCHANGE,  // Exchange name
+                    RabbitMQConfig.ROUTING_KEY,  // Routing key
+                    event  // Message (serialized as JSON)
             );
+
             System.out.println("Membership creation event sent to RabbitMQ: " + event);
 
             return membership;
