@@ -78,3 +78,8 @@ public class MembershipController {
         return 0;
     }
 }
+
+/*  TESTING TALEND API ENTRIES
+    http://localhost:8082/membership/addMembership/1/100
+    http://localhost:8082/membership/getMembership/3
+ */
